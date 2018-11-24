@@ -231,7 +231,6 @@ void main()
 	printf("Enter the path to the directory:\n");
 	gets_s(path);
 	strcat(path, "\\*.*");
-	printf("%s\n", path);
 	if ((hFile = _findfirst(path, &c_file)) == -1L)
 		printf("No files in current directory!\n");
 	else
