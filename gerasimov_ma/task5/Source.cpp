@@ -31,9 +31,9 @@ void KapitanovBubbleSort(ELEMENT * mas, int down, int up, int mode)
 		for (int j = down; j < up - i; j++)
 			if ((mas[j].size < mas[j + 1].size) && (mode == -1) || (mas[j].size > mas[j + 1].size) && (mode == 1))
 			{
-				ELEMENT tmp = file[j];
-				file[j] = file[j + 1];
-				file[j + 1] = tmp;
+				ELEMENT tmp = mas[j];
+				mas[j] = mas[j + 1];
+				mas[j + 1] = tmp;
 				flag = true;
 			}
 	}
