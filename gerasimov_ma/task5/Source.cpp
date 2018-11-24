@@ -216,7 +216,7 @@ void CombSort(ELEMENT * mas, int down, int up, int mode)
 				mas[j + i] = tmp;
 			}
 	}
-	KapitanovBubbleSort(file, down, up, mode);
+	KapitanovBubbleSort(mas, down, up, mode);
 }
 
 
