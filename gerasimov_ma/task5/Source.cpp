@@ -6,6 +6,8 @@
 #include <io.h>
 #include <locale.h>
 #include <string.h>
+#include <iostream>
+#include <cstdlib>
 
 
 #define _CRT_SECURE_NO_WARNINGS
@@ -19,8 +21,6 @@ typedef struct
 	long size;
 } ELEMENT;
 
-ELEMENT file[1000];
-
 void KapitanovBubbleSort(ELEMENT * mas, int down, int up, int mode)
 {
 	bool flag = true;
@@ -31,9 +31,9 @@ void KapitanovBubbleSort(ELEMENT * mas, int down, int up, int mode)
 		for (int j = down; j < up - i; j++)
 			if ((mas[j].size < mas[j + 1].size) && (mode == -1) || (mas[j].size > mas[j + 1].size) && (mode == 1))
 			{
-				ELEMENT tmp = file[j];
-				file[j] = file[j + 1];
-				file[j + 1] = tmp;
+				ELEMENT tmp = mas[j];
+				mas[j] = mas[j + 1];
+				mas[j + 1] = tmp;
 				flag = true;
 			}
 	}
@@ -216,7 +216,7 @@ void CombSort(ELEMENT * mas, int down, int up, int mode)
 				mas[j + i] = tmp;
 			}
 	}
-	KapitanovBubbleSort(file, down, up, mode);
+	KapitanovBubbleSort(mas, down, up, mode);
 }
 
 
@@ -225,72 +225,82 @@ void main()
 	setlocale(LC_ALL, "Rus");
 	struct _finddata_t c_file;
 	intptr_t hFile;
+	ELEMENT * file = NULL;
 	char path[200];
-	int count = -1;
 
 	printf("Enter the path to the directory:\n");
 	gets_s(path);
 	strcat(path, "\\*.*");
-	printf("%s\n", path);
 	if ((hFile = _findfirst(path, &c_file)) == -1L)
 		printf("No files in current directory!\n");
 	else
 	{
 		printf("\nFILE         DATE %24c   SIZE\n", ' ');
 		printf("----         ---- %24c   ----\n", ' ');
-		do {
-			char buffer[30];
+		int count = 0;
+		do
+		{
 			count++;
+		} while (_findnext(hFile, &c_file) == 0);
+		file = (ELEMENT *)malloc((count) * sizeof(ELEMENT));
+		count--;
+		hFile = _findfirst(path, &c_file);
+		int i = -1;
+		do
+		{
+			char buffer[30];
+			i++;
 			ctime_s(buffer, _countof(buffer), &c_file.time_write);
 			printf("%-12.12s %.24s  %10ld\n", c_file.name, buffer, c_file.size);
-			strcpy(file[count].name, c_file.name);
-			strcpy(file[count].date, buffer);
-			file[count].size = c_file.size;
+			strcpy(file[i].name, c_file.name);
+			strcpy(file[i].date, buffer);
+			file[i].size = c_file.size;
 		} while (_findnext(hFile, &c_file) == 0);
 		_findclose(hFile);
+
+		void((*Sort[7]))(ELEMENT * mas, int down, int up, int mode);
+		Sort[0] = KapitanovBubbleSort;
+		Sort[1] = SelectionSort;
+		Sort[2] = InsertionSort;
+		Sort[3] = MergeSort;
+		Sort[4] = QuickSort;
+		Sort[5] = ShellSort;
+		Sort[6] = CombSort;
+
+		short next_sort;
+		do
+		{
+			printf("\nSelect the sort:\n");
+			printf("0 - Bubble Sort\n");
+			printf("1 - Selection Sort\n");
+			printf("2 - Binary Insertion Sort\n");
+			printf("3 - Merge Sort\n");
+			printf("4 - Quick Sort\n");
+			printf("5 - Shell Sort\n");
+			printf("6 - Comb Sort\n");
+			short num_sort, mode;
+			scanf("%hd", &num_sort);
+			printf("How to sort?\n");
+			printf("1: in ascending order of size\n");
+			printf("-1: in descending order of size\n");
+			scanf("%hd", &mode);
+
+			clock_t time = clock();
+			Sort[num_sort](file, 0, count, mode);
+			time = clock() - time;
+			printf("\nFILE         DATE %24c   SIZE\n", ' ');
+			printf("----         ---- %24c   ----\n", ' ');
+			for (int i = 0; i <= count; i++)
+				printf("%-12.12s %.24s  %10ld\n", file[i].name, file[i].date, file[i].size);
+			printf("\nTime: %d ms\n", int((double)time * 1000 / CLOCKS_PER_SEC));
+			printf("\nWant to sort files again?\n");
+			printf("1 - Sort again; 0 - Quit\n");
+			scanf("%hd", &next_sort);
+		} while (next_sort == 1);
 	}
-
-	void((*Sort[7]))(ELEMENT * mas, int down, int up, int mode);
-	Sort[0] = KapitanovBubbleSort;
-	Sort[1] = SelectionSort;
-	Sort[2] = InsertionSort;
-	Sort[3] = MergeSort;
-	Sort[4] = QuickSort;
-	Sort[5] = ShellSort;
-	Sort[6] = CombSort;
-
-	short next_sort;
-	do
-	{
-		printf("\nSelect the sort:\n");
-		printf("0 - Bubble Sort\n");
-		printf("1 - Selection Sort\n");
-		printf("2 - Binary Insertion Sort\n");
-		printf("3 - Merge Sort\n");
-		printf("4 - Quick Sort\n");
-		printf("5 - Shell Sort\n");
-		printf("6 - Comb Sort\n");
-		short num_sort, mode;
-		scanf("%hd", &num_sort);
-		printf("How to sort?\n");
-		printf("1: in ascending order of size\n");
-		printf("-1: in descending order of size\n");
-		scanf("%hd", &mode);
-
-		clock_t time = clock();
-		Sort[num_sort](file, 0, count, mode);
-		time = clock() - time;
-		printf("\nFILE         DATE %24c   SIZE\n", ' ');
-		printf("----         ---- %24c   ----\n", ' ');
-		for (int i = 0; i <= count; i++)
-			printf("%-12.12s %.24s  %10ld\n", file[i].name, file[i].date, file[i].size);
-		printf("\nTime: %d ms\n", int((double)time * 1000 / CLOCKS_PER_SEC));
-		printf("\nWant to sort files again?\n");
-		printf("1 - Sort again; 0 - Quit\n");
-		scanf("%hd", &next_sort);
-	} while (next_sort == 1);
 
 
 	printf("\nZzz...");
 	_getch();
+	free(file);
 }
