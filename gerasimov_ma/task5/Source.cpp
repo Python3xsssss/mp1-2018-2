@@ -302,9 +302,5 @@ void main()
 
 	printf("\nZzz...");
 	_getch();
-<<<<<<< HEAD
 	free(file);
 }
-=======
-}
->>>>>>> f250b4c8cf4eeb144d2f0f8141fc8d516f2d6ca9
