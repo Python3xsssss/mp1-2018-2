@@ -1,4 +1,4 @@
-#include <stdio.h>
+﻿#include <stdio.h>
 #include <conio.h>
 #include <math.h>
 
@@ -7,6 +7,8 @@
 #define EXPONENT 2
 #define SQROOT 3
 #define LOGN 4
+
+double((*Func[5]))(double x) = { sin, cos, exp, sqrt, log };
 
 
 double derivative (short numFunc, unsigned int step)
@@ -21,12 +23,12 @@ double derivative (short numFunc, unsigned int step)
 			return 1;
 		case SQROOT: 
 		{
-			double nom = 1, denom = 0.5;
+			double nom = 1, denom = 1;
 			for (int i = 1; i <= step; i++)
 			{
 				if (i > 1)
 					nom *= (-1) * (2 * i - 3);
-				denom *= 8;
+				denom *= 2;
 			}
 			return nom / denom;
 		}
@@ -46,17 +48,22 @@ double derivative (short numFunc, unsigned int step)
 
 double TaylorSeries (double x, short numFunc, unsigned int nSteps, double accuracy)
 {
-	double a, diff = 1, fact = 1, result = derivative(numFunc, 0);
-
-	if (numFunc == SQROOT)
-		a = 3;
+	double a = 0, diff = 1, fact = 1, result = derivative(numFunc, 0), arg;
+	if ((numFunc == 3) || (numFunc == 4))
+		arg = x + 1;
 	else
-		a = 0;
-	for (int i = 1; i <= nSteps; i++)
+		arg = x;
+	double point = Func[numFunc](arg);
+
+	for (unsigned int i = 1; i <= nSteps; i++)
 	{
 		diff *= (x - a);
 		fact *= i;
+		if (isinf(fact))
+			break;
 		result += derivative(numFunc, i) * diff / fact;
+		if (fabs(result - point) <= accuracy)
+			break;
 	}
 	return result;
 }
@@ -71,12 +78,11 @@ void main ()
 		printf("0 - sin(x)\n");
 		printf("1 - cos(x)\n");
 		printf("2 - exp(x)\n");
-		printf("3 - sqrt(1+x) (NE RABOTAET)\n");
-		printf("4 - ln(1+x) (mdaaaa...)\n");
+		printf("3 - sqrt(1+x), x in [-1; 1]\n");
+		printf("4 - ln(1+x), x in (-1; 1]\n");
 		printf("\n");
 		printf("Select the function: ");
 		scanf_s("%hd", &numFunc);
-
 		do
 		{
 			printf("Enter x: ");
@@ -88,6 +94,7 @@ void main ()
 			printf("What's next?\n");
 			printf("1 - Calculate for another x \n2 - Select another function \n0 - Exit\n");
 			scanf_s("%hd", &next);
+			printf("\n");
 		} while (next == 1);
 
 	} while (next == 2);
