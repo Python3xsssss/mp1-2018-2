@@ -8,10 +8,16 @@
 #define SQROOT 3
 #define LOGN 4
 
+#define INFINITY 10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000.0
+
 double((*Func[5]))(double x) = { sin, cos, exp, sqrt, log };
 
+bool myinf(double x)
+{
+	return fabs(x) >= INFINITY;
+}
 
-double derivative (short numFunc, unsigned int step)
+double derivative (short numFunc, int step)
 {
 	switch (numFunc)
 	{
@@ -20,7 +26,9 @@ double derivative (short numFunc, unsigned int step)
 		case COSINE: 
 			return (((step % 2) + 1) % 2) * (-1) * (step % 4 - 1);
 		case EXPONENT:
+		{
 			return 1;
+		}
 		case SQROOT: 
 		{
 			double nom = 1, denom = 1;
@@ -46,58 +54,144 @@ double derivative (short numFunc, unsigned int step)
 	}
 }
 
-double TaylorSeries (double x, short numFunc, unsigned int nSteps, double accuracy)
+double TaylorSeries (double x, short numFunc, int * nSteps, double accuracy, double goal)
 {
-	double a = 0, diff = 1, fact = 1, result = derivative(numFunc, 0), arg;
+	double a = 0, diff = 1, fact = 1, result = derivative(numFunc, 0);
+	int i;
+
+	for (i = 1; i <= *nSteps; i++)
+	{
+		diff *= (x - a);
+		fact *= i;
+		if (myinf(fact))
+			break;
+		result += derivative(numFunc, i) * diff / fact;
+		if ((accuracy != -1) && (fabs(goal - result) <= accuracy))
+			break;
+	}
+	*nSteps = i - 1;
+	return result;
+}
+
+void firstMode (short numFunc)
+{
+	double x, accuracy, arg;
+	int nSteps;
+
+	printf("Enter x: ");
+	scanf_s("%lf", &x);
+	printf("Enter the number of steps (from 1 to 1000) and the accuracy (>= 0.000001): ");
+	scanf_s("%d %lf", &nSteps, &accuracy);
+
 	if ((numFunc == 3) || (numFunc == 4))
 		arg = x + 1;
 	else
 		arg = x;
-	double point = Func[numFunc](arg);
+	double goal = Func[numFunc](arg);
+	printf("\nGoal: %.6lf\n", goal);
 
-	for (unsigned int i = 1; i <= nSteps; i++)
+	double result = TaylorSeries(x, numFunc, &nSteps, accuracy, goal);
+	printf("Result: %.6lf\n", result);
+	printf("Difference: %.6lf\n", fabs(goal - result));
+	printf("Number of steps: %d\n", nSteps);
+}
+
+void secondMode (short numFunc)
+{
+	double x, arg;
+	int nSteps;
+
+	printf("Enter x: ");
+	scanf_s("%lf", &x);
+	printf("Enter the number of steps (from 1 to 25): ");
+	scanf_s("%d", &nSteps);
+	if ((numFunc == 3) || (numFunc == 4))
+		arg = x + 1;
+	else
+		arg = x;
+	double goal = Func[numFunc](arg);
+	printf("\nGoal: %.6lf\n", goal);
+	printf("STEP   RESULT %15c  DIFFERENCE\n", ' ');
+	printf("----   ------ %15c  ----------\n", ' ');
+	for (int i = 1; i <= nSteps; i++)
 	{
-		diff *= (x - a);
-		fact *= i;
-		if (isinf(fact))
-			break;
-		result += derivative(numFunc, i) * diff / fact;
-		if (fabs(result - point) <= accuracy)
-			break;
+		int step = i;
+		double result = TaylorSeries(x, numFunc, &step, 0, -1);
+		double diff = fabs(goal - result);
+		printf("%-4d   %-21.6lf   %-21.6lf\n", i, result, diff);
 	}
-	return result;
+}
+
+short mainMenu()
+{
+	short mode;
+	printf("\nModes:\n");
+	printf("1 - Single calculation\n");
+	printf("2 - Serial experiment\n");
+	printf("0 - Exit the program\n");
+	printf("\nSelect the mode: ");
+	scanf_s("%hd", &mode);
+	return mode;
+}
+
+short funcMenu()
+{
+	short numFunc;
+	printf("\nList of available functions:\n");
+	printf("1 - sin(x)\n");
+	printf("2 - cos(x)\n");
+	printf("3 - exp(x)\n");
+	printf("4 - sqrt(1+x), x in [-1; 1]\n");
+	printf("5 - ln(1+x), x in (-1; 1]\n");
+	printf("0 - Exit to main menu\n");
+	printf("\n");
+	printf("Select the function: ");
+	scanf_s("%hd", &numFunc);
+	return numFunc - 1;
+}
+
+short endOfMode()
+{
+	short next;
+	printf("\nWhat's next?\n");
+	printf("1 - Calculate for another x \n2 - Select another function \n0 - Exit to main menu\n");
+	scanf_s("%hd", &next);
+	printf("\n");
+	return next;
 }
 
 void main ()
 {
-	short numFunc, next;
-	double x, accuracy;
-	unsigned int nSteps;
+	short mode, numFunc, next;
+
+	printf("Welcome to the Taylor Function Calculator!\n");
 	do 
 	{
-		printf("0 - sin(x)\n");
-		printf("1 - cos(x)\n");
-		printf("2 - exp(x)\n");
-		printf("3 - sqrt(1+x), x in [-1; 1]\n");
-		printf("4 - ln(1+x), x in (-1; 1]\n");
-		printf("\n");
-		printf("Select the function: ");
-		scanf_s("%hd", &numFunc);
-		do
-		{
-			printf("Enter x: ");
-			scanf_s("%lf", &x);
-			printf("Enter the number of steps and the accuracy: ");
-			scanf_s("%d %lf", &nSteps, &accuracy);
-
-			printf("\nResult: %lf\n", TaylorSeries(x, numFunc, nSteps, accuracy));
-			printf("What's next?\n");
-			printf("1 - Calculate for another x \n2 - Select another function \n0 - Exit\n");
-			scanf_s("%hd", &next);
-			printf("\n");
-		} while (next == 1);
-
-	} while (next == 2);
-	printf("Zzz...");
+		mode = mainMenu();
+		if (mode == 0)
+			printf("Zzz...");
+		else if ((mode < 0) || (mode > 2))
+			printf("Incorrect mode!\n");
+		else
+			do
+			{
+				numFunc = funcMenu();
+				next = 1;
+				if ((numFunc < -1) || (numFunc > 4))
+				{
+					printf("This function does not exist!\n");
+					next = 2;
+				}
+				else
+					while ((next == 1) && (numFunc != -1))
+					{
+						if (mode == 1)
+							firstMode(numFunc);
+						else
+							secondMode(numFunc);
+						next = endOfMode();
+					}
+			} while ((next == 2) && (numFunc != -1));
+	} while (mode != 0);
 	_getch();
 }
