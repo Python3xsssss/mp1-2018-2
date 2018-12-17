@@ -89,11 +89,11 @@ void firstMode (short numFunc)
 		arg = x;
 	double goal = Func[numFunc](arg);
 	printf("\nGoal: %.6lf\n", goal);
-
+	nSteps -= 1;
 	double result = TaylorSeries(x, numFunc, &nSteps, accuracy, goal);
 	printf("Result: %.6lf\n", result);
 	printf("Difference: %.6lf\n", fabs(goal - result));
-	printf("Number of steps: %d\n", nSteps);
+	printf("Number of steps: %d\n", nSteps + 1);
 }
 
 void secondMode (short numFunc)
@@ -115,7 +115,7 @@ void secondMode (short numFunc)
 	printf("----   ------ %15c  ----------\n", ' ');
 	for (int i = 1; i <= nSteps; i++)
 	{
-		int step = i;
+		int step = i - 1;
 		double result = TaylorSeries(x, numFunc, &step, 0, -1);
 		double diff = fabs(goal - result);
 		printf("%-4d   %-21.6lf   %-21.6lf\n", i, result, diff);
