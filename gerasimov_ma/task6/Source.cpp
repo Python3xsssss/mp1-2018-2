@@ -57,19 +57,26 @@ double derivative (short numFunc, int step)
 double TaylorSeries (double x, short numFunc, int * nSteps, double accuracy, double goal)
 {
 	double a = 0, diff = 1, fact = 1, result = derivative(numFunc, 0);
-	int i;
+	int i, nulls = 0, end = *nSteps;
 
-	for (i = 1; i <= *nSteps; i++)
+	for (i = 1; i <= end; i++)
 	{
 		diff *= (x - a);
 		fact *= i;
 		if (myinf(fact))
 			break;
-		result += derivative(numFunc, i) * diff / fact;
+		double tmp = derivative(numFunc, i);
+		if (tmp == 0)
+		{
+			nulls++;
+			end++;
+		}
+		else
+			result += tmp * diff / fact;
 		if ((accuracy != -1) && (fabs(goal - result) <= accuracy))
 			break;
 	}
-	*nSteps = i - 1;
+	*nSteps = i - 1 - nulls;
 	return result;
 }
 
@@ -116,7 +123,7 @@ void secondMode (short numFunc)
 	for (int i = 1; i <= nSteps; i++)
 	{
 		int step = i - 1;
-		double result = TaylorSeries(x, numFunc, &step, 0, -1);
+		double result = TaylorSeries(x, numFunc, &step, -1, goal);
 		double diff = fabs(goal - result);
 		printf("%-4d   %-21.6lf   %-21.6lf\n", i, result, diff);
 	}
